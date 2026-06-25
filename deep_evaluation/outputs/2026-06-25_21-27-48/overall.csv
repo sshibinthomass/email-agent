@@ -1,0 +1,7 @@
+evaluation,metric,value,correct,total,datetime
+classifier,exact_match_accuracy,0.9333,28,30,2026-06-25_21-27-48
+judge,decision_accuracy,0.9167,55,60,2026-06-25_21-27-48
+judge,precision,0.8571,30,35,2026-06-25_21-27-48
+judge,recall,1.0000,30,30,2026-06-25_21-27-48
+judge,f1_score,0.9231,,,2026-06-25_21-27-48
+overall,average_accuracy,0.9250,,,2026-06-25_21-27-48

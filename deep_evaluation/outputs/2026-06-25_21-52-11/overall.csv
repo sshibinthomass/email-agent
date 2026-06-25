@@ -1,0 +1,5 @@
+evaluation,metric,value,correct,total,datetime
+judge,decision_accuracy,0.9667,58,60,2026-06-25_21-52-11
+judge,precision,1.0000,28,28,2026-06-25_21-52-11
+judge,recall,0.9333,28,30,2026-06-25_21-52-11
+judge,f1_score,0.9655,,,2026-06-25_21-52-11

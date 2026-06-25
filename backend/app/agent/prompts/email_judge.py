@@ -3,40 +3,34 @@ EMAIL_JUDGE_PROMPT = """You are given three inputs:
 - body: the email body
 - proposed_category: a candidate label for the email
 
-Your task is to decide whether the proposed category is a reasonable fit for the email’s main purpose.
+Your task is to decide whether the proposed category is the correct classification for the email.
 
-Output exactly these two fields and nothing else:
-- accepted: true or false
-- reason: a brief explanation
+The 6 allowed categories are:
+1. forum: emails about forum threads, community discussions, or community rule changes.
+2. verify_code: authentication codes, one-time passwords (OTPs), verification PINs, or password reset tokens.
+3. promotions: marketing, sales, discounts, offers, or newsletters promoting products/services.
+4. social_media: friend requests, new followers, profile updates, or activity notifications from social networks (e.g. LinkedIn, Twitter).
+5. spam: deceptive/fraudulent messages, phishing scams, lotteries, or malicious links.
+6. updates: informational account/system notices, order/shipping updates, flight/hotel bookings, policy notices, or maintenance windows.
 
-Core decision rule:
-- Accept (accepted = true) when the proposed category is a plausible label for the email’s primary intent/theme.
-- Reject (accepted = false) only when the proposed category is clearly inconsistent with the email content.
-- Be tolerant of broad but reasonable labels. Do not reject merely because a more precise category could also exist.
-
-How to judge:
-- Use both subject and body, with the body as the stronger signal when they differ.
-- Focus on the main purpose of the message, not minor details.
-- Ask: “Would a reasonable person consider this category to fit this email at all?” If yes, accept it unless there is a clear mismatch.
-
-Important category guidance:
-- Broad informational categories like updates are acceptable for emails that mainly inform the user about a change, notice, status update, account-related update, policy notice, feature rollout, maintenance, outage, or similar informational message.
-- Account/security/settings change notifications can still reasonably fit updates if they are primarily informational.
-- Marketing, sales, discounts, offers, promo codes, newsletters pushing products/services, and similar commercial outreach fit promotions.
-- Service outage, maintenance, bug-fix, feature-rollout, forum activity, event reminders, or general notifications do not fit verify_code.
-- social_media should be reserved for emails genuinely about social-network activity or platform interactions; general event/session notices do not fit it.
-- Do not treat ordinary unsolicited advertising or sales outreach as spam by default. spam should be accepted only when the email is clearly junk/abusive/deceptive in nature, not merely because it is promotional. Legitimate marketing or business solicitation is better treated as a normal promotional/marketing email, so a proposed category of spam should usually be rejected unless the content itself strongly supports it.
+Core decision rules:
+- These 6 categories are mutually exclusive.
+- Accept (accepted = true) only if the proposed_category is the correct and best-fitting classification for the email.
+- Reject (accepted = false) if the proposed_category is incorrect, or if the email clearly fits a more specific allowed category (e.g., do not accept 'updates' if the email is actually a forum thread or a social media invitation).
+- Reject 'updates' for phishing/scam/fraudulent emails (these should be 'spam' instead).
 
 Reason writing:
 - Keep the reason concise and specific.
-- If accepted = true, briefly say why the category fits the email’s main purpose.
-- If accepted = false, briefly state the mismatch and optionally mention a better-fitting type.
-- Do not add extra commentary beyond the two fields.
+- If accepted = true, briefly say why the category is the correct classification.
+- If accepted = false, briefly state why it is incorrect and identify the correct category from the list.
 
-Examples of intended behavior:
-- AMA/event starting-time notice + social_media → reject, because it is an event/update notice, not social-media activity.
-- Forum/thread/trending-content notification + verify_code → reject, because it is a content/activity notification, not a verification-code email.
-- Promotional coaching offer + spam → reject unless the email is clearly deceptive/junk; being unsolicited promotion alone is not enough to accept spam.
+Examples of correct behavior:
+- Moderation notice mentioning community guidelines update + updates → reject (should be forum).
+- Verizon payment overdue warning pointing to suspicious URL + updates → reject (should be spam).
+- LinkedIn connection request / invitation + updates → reject (should be social_media).
+- GDPR deletion request or policy notice + updates → accept (correctly fits updates).
+- Thread trending notification + verify_code → reject (should be forum).
+- Promotional coaching offer + spam → reject (should be promotions unless clearly deceptive/fraudulent).
 
 Return only:
 - accepted: true or false
