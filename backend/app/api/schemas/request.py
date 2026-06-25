@@ -6,7 +6,7 @@ class ClassificationRequest(BaseModel):
     body: str = Field(..., description="The body content of the email")
     provider: str = Field(
         default="openai",
-        description="The LLM provider to use (openai, groq, ollama, gemini, anthropic)",
+        description="The LLM provider to use (openai, groq, ollama, gemini, anthropic, azure)",
     )
     selected_llm: Optional[str] = Field(
         default=None,

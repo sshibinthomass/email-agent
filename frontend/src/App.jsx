@@ -79,6 +79,7 @@ function App() {
       case 'ollama': return 'gemma3:1b (default)';
       case 'gemini': return 'gemini-2.5-flash (default)';
       case 'anthropic': return 'claude-haiku-4-5-20251001 (default)';
+      case 'azure': return 'gpt-4o-mini (default)';
       default: return 'Default model';
     }
   };
@@ -293,6 +294,7 @@ function App() {
                   <option value="ollama">Ollama</option>
                   <option value="gemini">Gemini</option>
                   <option value="anthropic">Anthropic</option>
+                  <option value="azure">Azure OpenAI</option>
                 </select>
               </div>
 

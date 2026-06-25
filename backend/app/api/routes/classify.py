@@ -91,11 +91,38 @@ def get_provider_llm(req: ClassificationRequest):
         from backend.app.agent.llms.anthropic_llm import AnthropicLLM
         return AnthropicLLM(user_controls).get_base_llm()
 
+    elif provider_lower == "azure":
+        model_name = req.selected_llm or "gpt-4o-mini"
+        api_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY", "")
+        endpoint = os.getenv("AZURE_OPENAI_ENDPOINT") or os.getenv("OPENAI_BASE_URL", "")
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION") or os.getenv("OPENAI_API_VERSION", "2024-02-15-preview")
+
+        if not api_key:
+            raise HTTPException(
+                status_code=400,
+                detail="Azure OpenAI API key not found. Please set the AZURE_OPENAI_API_KEY or OPENAI_API_KEY environment variable."
+            )
+        if not endpoint:
+            raise HTTPException(
+                status_code=400,
+                detail="Azure OpenAI Endpoint not found. Please set the AZURE_OPENAI_ENDPOINT or OPENAI_BASE_URL environment variable."
+            )
+
+        user_controls = {
+            "AZURE_OPENAI_API_KEY": api_key,
+            "AZURE_OPENAI_ENDPOINT": endpoint,
+            "AZURE_OPENAI_API_VERSION": api_version,
+            "selected_llm": model_name,
+        }
+        from backend.app.agent.llms.azure_llm import AzureLLM
+        return AzureLLM(user_controls).get_base_llm()
+
     else:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported provider '{req.provider}'. Allowed providers: openai, groq, ollama, gemini, anthropic."
+            detail=f"Unsupported provider '{req.provider}'. Allowed providers: openai, groq, ollama, gemini, anthropic, azure."
         )
+
 
 
 
