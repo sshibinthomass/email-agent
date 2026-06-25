@@ -1,0 +1,34 @@
+# Environments
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+.ipynb_checkpoints
+
+# Node/Frontend
+node_modules/
+.npm
+dist/
+build/
+.svelte-kit/
+.next/
+.nuxt/
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
