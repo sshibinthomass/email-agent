@@ -5,5 +5,7 @@ class ClassificationResponse(BaseModel):
     subject: str
     body: str
     category: Optional[str]
-    confidence: Optional[float]
     reason: Optional[str]
+    JudgeVerted: Optional[str] = None
+    JudgeReasoning: Optional[str] = None
+

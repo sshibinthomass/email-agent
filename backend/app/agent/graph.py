@@ -8,7 +8,7 @@ project_root = current_file.parents[3]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from backend.app.agent.nodes import EmailClassifierNode
+from backend.app.agent.nodes import EmailClassifierNode, EmailJudgeNode
 
 def email_classifier_build_graph(graph_builder, llm):
     """
@@ -22,7 +22,12 @@ def email_classifier_build_graph(graph_builder, llm):
         llm: The language model to use for the chatbot
     """
     email_classifier_node = EmailClassifierNode(llm)
+    email_judge_node = EmailJudgeNode()
 
     graph_builder.add_node("email_classifier", email_classifier_node.process)
+    graph_builder.add_node("email_judge", email_judge_node.process)
+
     graph_builder.add_edge(START, "email_classifier")
-    graph_builder.add_edge("email_classifier", END)
+    graph_builder.add_edge("email_classifier", "email_judge")
+    graph_builder.add_edge("email_judge", END)
+

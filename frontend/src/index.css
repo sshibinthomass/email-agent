@@ -365,12 +365,6 @@ textarea {
   flex-wrap: wrap;
 }
 
-.result-main {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
 .category-pill {
   font-size: 1.1rem;
   font-weight: 700;
@@ -391,48 +385,6 @@ textarea {
 .category-spam { color: var(--color-spam); background: rgba(239, 68, 68, 0.1); }
 .category-urgent { color: var(--color-urgent); background: rgba(245, 158, 11, 0.1); }
 .category-general { color: var(--color-general); background: rgba(107, 114, 128, 0.1); }
-
-/* Circular/Radial Confidence Meter */
-.confidence-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.confidence-ring {
-  position: relative;
-  width: 76px;
-  height: 76px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.confidence-ring svg {
-  transform: rotate(-90deg);
-}
-
-.confidence-ring circle {
-  fill: none;
-  stroke-width: 6;
-}
-
-.confidence-bg {
-  stroke: rgba(255, 255, 255, 0.05);
-}
-
-.confidence-val-ring {
-  stroke-dasharray: 220;
-  transition: stroke-dashoffset var(--transition-slow);
-}
-
-.confidence-text {
-  position: absolute;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
 
 .reason-card {
   background: rgba(255, 255, 255, 0.02);
@@ -646,9 +598,70 @@ textarea {
   to { transform: translateX(0); opacity: 1; }
 }
 
+/* Judge Verdict Styles */
+.judge-card {
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  border: 1px solid transparent;
+  transition: all var(--transition-normal);
+  animation: fadeIn var(--transition-normal);
+}
+
+.judge-accepted {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+.judge-rejected {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.judge-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.judge-icon {
+  flex-shrink: 0;
+}
+
+.text-success {
+  color: #10b981;
+}
+
+.text-danger {
+  color: #ef4444;
+}
+
+.judge-title {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.judge-accepted .judge-title {
+  color: #10b981;
+}
+
+.judge-rejected .judge-title {
+  color: #ef4444;
+}
+
+.judge-text {
+  color: var(--text-primary);
+  font-size: 0.975rem;
+  line-height: 1.6;
+}
+
 /* Responsive adjust */
 @media (max-width: 768px) {
   .app-container {
     padding: 1rem 1rem;
   }
 }
+

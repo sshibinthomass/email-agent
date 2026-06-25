@@ -12,116 +12,11 @@ if str(project_root) not in sys.path:
 from backend.app.api.schemas.request import ClassificationRequest
 from backend.app.api.schemas.response import ClassificationResponse
 from backend.app.agent.builder import GraphBuilder
+from backend.app.agent.llms.factory import build_llm_with_fallbacks
 from langfuse import observe
 from langfuse.langchain import CallbackHandler
 
 router = APIRouter()
-
-
-def get_provider_llm(req: ClassificationRequest):
-    provider_lower = req.provider.lower()
-
-    if provider_lower == "openai":
-        model_name = req.selected_llm or "gpt-4.1-mini"
-        api_key = os.getenv("OPENAI_API_KEY", "")
-        if not api_key:
-            raise HTTPException(
-                status_code=400,
-                detail="OpenAI API key not found. Please set the OPENAI_API_KEY environment variable."
-            )
-        user_controls = {
-            "OPENAI_API_KEY": api_key,
-            "selected_llm": model_name,
-        }
-        from backend.app.agent.llms.openai_llm import OpenAILLM
-        return OpenAILLM(user_controls).get_base_llm()
-
-    elif provider_lower == "groq":
-        model_name = req.selected_llm or "llama-3.3-70b-versatile"
-        api_key = os.getenv("GROQ_API_KEY", "")
-        if not api_key:
-            raise HTTPException(
-                status_code=400,
-                detail="Groq API key not found. Please set the GROQ_API_KEY environment variable."
-            )
-        user_controls = {
-            "GROQ_API_KEY": api_key,
-            "selected_llm": model_name,
-        }
-        from backend.app.agent.llms.groq_llm import GroqLLM
-        return GroqLLM(user_controls).get_base_llm()
-
-    elif provider_lower == "ollama":
-        model_name = req.selected_llm or "gemma3:1b"
-        base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        user_controls = {
-            "selected_llm": model_name,
-            "OLLAMA_BASE_URL": base_url,
-        }
-        from backend.app.agent.llms.ollama_llm import OllamaLLM
-        return OllamaLLM(user_controls).get_base_llm()
-
-    elif provider_lower == "gemini":
-        model_name = req.selected_llm or "gemini-2.5-flash"
-        api_key = os.getenv("GEMINI_API_KEY", "")
-        if not api_key:
-            raise HTTPException(
-                status_code=400,
-                detail="Gemini API key not found. Please set the GEMINI_API_KEY environment variable."
-            )
-        user_controls = {
-            "GEMINI_API_KEY": api_key,
-            "selected_llm": model_name,
-        }
-        from backend.app.agent.llms.gemini_llm import GeminiLLM
-        return GeminiLLM(user_controls).get_base_llm()
-
-    elif provider_lower == "anthropic":
-        model_name = req.selected_llm or "claude-haiku-4-5-20251001"
-        api_key = os.getenv("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            raise HTTPException(
-                status_code=400,
-                detail="Anthropic API key not found. Please set the ANTHROPIC_API_KEY environment variable."
-            )
-        user_controls = {
-            "ANTHROPIC_API_KEY": api_key,
-            "selected_llm": model_name,
-        }
-        from backend.app.agent.llms.anthropic_llm import AnthropicLLM
-        return AnthropicLLM(user_controls).get_base_llm()
-
-    elif provider_lower == "azure":
-        model_name = req.selected_llm or "gpt-4o-mini"
-        api_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY", "")
-        endpoint = os.getenv("AZURE_OPENAI_ENDPOINT") or os.getenv("OPENAI_BASE_URL", "")
-        api_version = os.getenv("AZURE_OPENAI_API_VERSION") or os.getenv("OPENAI_API_VERSION", "2024-02-15-preview")
-
-        if not api_key:
-            raise HTTPException(
-                status_code=400,
-                detail="Azure OpenAI API key not found. Please set the AZURE_OPENAI_API_KEY or OPENAI_API_KEY environment variable."
-            )
-        if not endpoint:
-            raise HTTPException(
-                status_code=400,
-                detail="Azure OpenAI Endpoint not found. Please set the AZURE_OPENAI_ENDPOINT or OPENAI_BASE_URL environment variable."
-            )
-
-        user_controls = {
-            "AZURE_OPENAI_API_KEY": api_key,
-            "AZURE_OPENAI_ENDPOINT": endpoint,
-            "AZURE_OPENAI_API_VERSION": api_version,
-            "selected_llm": model_name,
-        }
-        from backend.app.agent.llms.azure_llm import AzureLLM
-        return AzureLLM(user_controls).get_base_llm()
-
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported provider '{req.provider}'. Allowed providers: openai, groq, ollama, gemini, anthropic, azure."
-        )
 
 
 
@@ -130,8 +25,21 @@ def get_provider_llm(req: ClassificationRequest):
 @observe(name="classify_email")
 async def classify_email(req: ClassificationRequest):
     try:
-        # Initialize selected base LLM model
-        llm = get_provider_llm(req)
+        supported_providers = {"openai", "groq", "ollama", "gemini", "anthropic", "azure"}
+        if req.provider.lower() not in supported_providers:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Unsupported provider '{req.provider}'. "
+                    f"Allowed providers: {', '.join(sorted(supported_providers))}."
+                ),
+            )
+
+        # Selected provider first, then anthropic -> gemini -> groq -> openai -> ollama
+        try:
+            llm = build_llm_with_fallbacks(req.provider, req.selected_llm)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
         # Build state graph
         builder = GraphBuilder(llm)
@@ -142,8 +50,9 @@ async def classify_email(req: ClassificationRequest):
             "subject": req.subject,
             "body": req.body,
             "category": None,
-            "confidence": None,
             "reason": None,
+            "JudgeVerted": None,
+            "JudgeReasoning": None,
         }
 
         # Initialize Langfuse CallbackHandler if credentials are configured
@@ -168,8 +77,9 @@ async def classify_email(req: ClassificationRequest):
             subject=result.get("subject", req.subject),
             body=result.get("body", req.body),
             category=result.get("category"),
-            confidence=result.get("confidence"),
             reason=result.get("reason"),
+            JudgeVerted=result.get("JudgeVerted"),
+            JudgeReasoning=result.get("JudgeReasoning"),
         )
     except HTTPException as he:
         raise he

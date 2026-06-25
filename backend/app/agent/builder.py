@@ -64,9 +64,11 @@ if __name__ == "__main__":
             "subject": "Anniversary Special: Buy one get one free",
             "body": "As our loyal customer, get exclusive $60 off $75+: example.com/6058 Offer code: WELCOME20.",
             "category": None,
-            "confidence": None,
             "reason": None,
+            "JudgeVerted": None,
+            "JudgeReasoning": None,
         }
+
 
         # Initialize Langfuse CallbackHandler if credentials are configured
         callbacks = []

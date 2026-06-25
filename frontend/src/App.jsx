@@ -114,8 +114,9 @@ function App() {
   const handleCopyJson = (result) => {
     const cleanResult = {
       category: result.category,
-      confidence: result.confidence,
       reason: result.reason,
+      JudgeVerted: result.JudgeVerted,
+      JudgeReasoning: result.JudgeReasoning,
       subject: result.subject,
       body: result.body,
       provider: result.provider,
@@ -391,50 +392,11 @@ function App() {
                   </div>
 
                   <div className="result-header" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '1.25rem' }}>
-                    <div className="result-main">
-                      <div>
-                        <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Classified Category</h4>
-                        <span className={`category-pill ${getCategoryColorClass(currentResult.category)}`}>
-                          {currentResult.category}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="confidence-container">
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Certainty</span>
-                      <div className="confidence-ring">
-                        {currentResult.confidence !== null && currentResult.confidence !== undefined ? (
-                          <>
-                            <svg width="76" height="76">
-                              <circle cx="38" cy="38" r="32" className="confidence-bg" />
-                              <circle 
-                                cx="38" 
-                                cy="38" 
-                                r="32" 
-                                className="confidence-val-ring" 
-                                stroke="currentColor"
-                                strokeDashoffset={201 - (201 * (currentResult.confidence > 1 ? currentResult.confidence / 100 : currentResult.confidence))}
-                                style={{ 
-                                  strokeDasharray: 201, 
-                                  color: 'var(--color-primary)'
-                                }}
-                              />
-                            </svg>
-                            <span className="confidence-text">
-                              {Math.round(currentResult.confidence > 1 ? currentResult.confidence : currentResult.confidence * 100)}%
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <svg width="76" height="76">
-                              <circle cx="38" cy="38" r="32" className="confidence-bg" style={{ strokeDasharray: '4 4' }} />
-                            </svg>
-                            <span className="confidence-text" style={{ fontSize: '0.75rem', color: 'var(--color-primary)' }}>
-                              Schema OK
-                            </span>
-                          </>
-                        )}
-                      </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Classified Category</h4>
+                      <span className={`category-pill ${getCategoryColorClass(currentResult.category)}`}>
+                        {currentResult.category}
+                      </span>
                     </div>
                   </div>
 
@@ -442,6 +404,22 @@ function App() {
                     <h4 className="reason-title">Classification Rationale</h4>
                     <p className="reason-text">{currentResult.reason}</p>
                   </div>
+
+                  {currentResult.JudgeVerted && (
+                    <div className={`judge-card ${currentResult.JudgeVerted === 'accept' ? 'judge-accepted' : 'judge-rejected'}`}>
+                      <div className="judge-header">
+                        {currentResult.JudgeVerted === 'accept' ? (
+                          <CheckCircle2 className="judge-icon text-success" size={18} />
+                        ) : (
+                          <AlertCircle className="judge-icon text-danger" size={18} />
+                        )}
+                        <h4 className="judge-title">
+                          LLM Judge: {currentResult.JudgeVerted === 'accept' ? 'APPROVED' : 'REJECTED'}
+                        </h4>
+                      </div>
+                      <p className="judge-text">{currentResult.JudgeReasoning}</p>
+                    </div>
+                  )}
 
                   <div className="metadata-grid">
                     <div className="meta-item">

@@ -7,5 +7,7 @@ class AgentState(TypedDict):
     subject: str
     body: str
     category: str | None
-    confidence: float | None
     reason: str | None
+    JudgeVerted: str | None
+    JudgeReasoning: str | None
+
