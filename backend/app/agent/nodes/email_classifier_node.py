@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -16,6 +17,8 @@ from typing import Literal
 import json
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 class EmailCategory(BaseModel):
@@ -45,15 +48,20 @@ class EmailClassifierNode:
         subject = state.get("subject", "")
         body = state.get("body", "")
 
+        logger.info(f"EmailClassifierNode: Starting classification for email: Subject='{subject}'")
+        logger.debug(f"EmailClassifierNode: Email Body: {body}")
+
         prompt = EMAIL_CLASSIFIER_PROMPT.format(subject=subject, body=body)
 
         try:
             result = self.llm.invoke(prompt)
+            logger.info(f"EmailClassifierNode: Classification successful. Category: '{result.category}', Reason: '{result.reason}'")
             return {
                 "category": result.category,
                 "reason": result.reason
             }
         except Exception as e:
+            logger.error(f"EmailClassifierNode: Error during structured classification: {str(e)}", exc_info=True)
             return {
                 "category": "Unknown",
                 "reason": f"Error during structured classification: {str(e)}"
@@ -61,6 +69,12 @@ class EmailClassifierNode:
 
 
 if __name__ == "__main__":
+    # Configure logging for direct script execution
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
+
     # Create LLM instance
     from backend.app.agent.llms.groq_llm import GroqLLM
 

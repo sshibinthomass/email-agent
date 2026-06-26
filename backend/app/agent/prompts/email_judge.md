@@ -1,4 +1,4 @@
-EMAIL_JUDGE_PROMPT = """You are given three inputs:
+You are given three inputs:
 - subject: the email subject line
 - body: the email body
 - proposed_category: a candidate label for the email
@@ -39,4 +39,4 @@ Return only:
 Email Details to Judge:
 Subject: {subject}
 Body: {body}
-Proposed Category: {proposed_category}"""
+Proposed Category: {proposed_category}

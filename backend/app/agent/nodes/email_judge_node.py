@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -16,6 +17,8 @@ from pydantic import BaseModel, Field
 import json
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Azure judge LLM — same deployment and credentials as gepa_training_judge/optimize_prompt.py
 AZURE_JUDGE_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.4")
@@ -69,6 +72,9 @@ class EmailJudgeNode:
         body = state.get("body", "")
         proposed_category = state.get("category", "")
 
+        logger.info(f"EmailJudgeNode: Starting validation for proposed category '{proposed_category}' on subject: '{subject}'")
+        logger.debug(f"EmailJudgeNode: Email Body: {body}")
+
         prompt = EMAIL_JUDGE_PROMPT.format(
             subject=subject,
             body=body,
@@ -78,11 +84,13 @@ class EmailJudgeNode:
         try:
             result = self.llm.invoke(prompt)
             verted = "accept" if result.accepted else "reject"
+            logger.info(f"EmailJudgeNode: Validation completed. Decision: '{verted}', Reason: '{result.reason}'")
             return {
                 "JudgeVerted": verted,
                 "JudgeReasoning": result.reason
             }
         except Exception as e:
+            logger.error(f"EmailJudgeNode: Error during judge validation: {str(e)}", exc_info=True)
             return {
                 "JudgeVerted": "reject",
                 "JudgeReasoning": f"Error during judge validation: {str(e)}"
@@ -90,6 +98,12 @@ class EmailJudgeNode:
 
 
 if __name__ == "__main__":
+    # Configure logging for direct script execution
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
+
     node = EmailJudgeNode()
 
     # State with sample email and category

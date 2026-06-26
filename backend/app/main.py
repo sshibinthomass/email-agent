@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 
 import dotenv
@@ -15,6 +16,28 @@ if str(project_root) not in sys.path:
 from backend.app.api.router import api_router
 
 dotenv.load_dotenv()
+
+# Configure logging for backend package to ensure logs are shown properly in all environments
+backend_logger = logging.getLogger("backend")
+backend_logger.setLevel(logging.INFO)
+if not backend_logger.handlers:
+    # 1. Stdout Handler
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    stdout_handler.setFormatter(stdout_formatter)
+    backend_logger.addHandler(stdout_handler)
+
+    # 2. File Handler (saves to backend.log in project root)
+    try:
+        log_file_path = project_root / "backend.log"
+        file_handler = logging.FileHandler(log_file_path, encoding="utf-8")
+        file_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+        file_handler.setFormatter(file_formatter)
+        backend_logger.addHandler(file_handler)
+    except Exception as e:
+        print(f"Warning: Could not configure FileHandler for backend.log: {e}", file=sys.stderr)
+
+    backend_logger.propagate = False
 
 app = FastAPI(
     title="Email Classifier API",

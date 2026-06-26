@@ -32,3 +32,6 @@ build/
 *.njsproj
 *.sln
 *.swp
+
+# Logs
+*.log

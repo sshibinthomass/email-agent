@@ -41,9 +41,16 @@ class GraphBuilder:
 
 if __name__ == "__main__":
     import asyncio
+    import logging
+    import os
     from backend.app.agent.llms.openai_llm import OpenAILLM
     from langchain_core.messages import HumanMessage, SystemMessage
-    import os
+
+    # Configure logging for direct execution
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
 
     async def main():
         user_controls_input = {

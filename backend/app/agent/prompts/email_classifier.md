@@ -1,4 +1,4 @@
-EMAIL_CLASSIFIER_PROMPT = """You are an expert email classification system.
+You are an expert email classification system.
 Analyze the email below and classify it into exactly one of the target categories:
 - forum (discussion boards, mailing lists, forum updates, online groups)
 - verify_code (one-time verification codes, security codes, login OTPs, password reset links)
@@ -9,4 +9,4 @@ Analyze the email below and classify it into exactly one of the target categorie
 
 Email Details:
 Subject: {subject}
-Body: {body}"""
+Body: {body}
